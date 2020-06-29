@@ -1,0 +1,11 @@
+.#*
+#*
+~*
+.~*
+__pycache__
+res
+.*venv*
+Dockerfile
+*token*
+*logs*
+*egg-info*
