@@ -31,7 +31,9 @@ class Databases:
                     f"[Database: {name}] Failed to connect to database. Errorcode - {error.errno}"
                 )
                 raise error from None
-        return Databases._instances_[name]["db"]
+            return Databases._instances_[name]["db"]
+        else:
+            raise DatabasesError(f"Database {name} is already init!")
 
     @staticmethod
     def get_database(name="default"):
