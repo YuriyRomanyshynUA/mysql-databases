@@ -26,14 +26,26 @@ class Databases:
                 db = MySqlDB(settings)
                 db.init_connection()
                 Databases._instances_[name] = {"db": db, "settings": settings}
+                return Databases._instances_[name]["db"]
             except MySqlError as error:
                 logger.exception(
                     f"[Database: {name}] Failed to connect to database. Errorcode - {error.errno}"
                 )
                 raise error from None
-            return Databases._instances_[name]["db"]
         else:
-            raise DatabasesError(f"Database {name} is already init!")
+            db_dict = Databases._instances_.get(name).get("db")
+            if db_dict["db"].is_connected():
+                raise DatabasesError(f"Database {name} is already init!")
+            try:
+                db_dict["settings"] = settings
+                db_dict["db"] = MySqlDB(settings)
+                return db_dict["db"]
+            except MySqlError as error:
+                logger.exception(
+                    f"[Database: {name}] Failed to connect to database. Errorcode - {error.errno}"
+                )
+                raise error from None
+
 
     @staticmethod
     def get_database(name="default"):
