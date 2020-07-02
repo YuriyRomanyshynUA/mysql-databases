@@ -33,7 +33,7 @@ class Databases:
                 )
                 raise error from None
         else:
-            db_dict = Databases._instances_.get(name).get("db")
+            db_dict = Databases._instances_.get(name)
             if db_dict["db"].is_connected():
                 raise DatabasesError(f"Database {name} is already init!")
             try:
