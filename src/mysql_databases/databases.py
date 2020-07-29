@@ -46,7 +46,6 @@ class Databases:
                 )
                 raise error from None
 
-
     @staticmethod
     def get_database(name="default"):
         if Databases._instances_.get(name) is None:
@@ -56,6 +55,8 @@ class Databases:
             settings = Databases._instances_[name]["settings"]
             if not database.is_connected():
                 try:
+                    database.rollback()
+                    database.close()
                     database.reconnect(
                         attempts = settings.get("DB_RECONNECT_ATTEMPTS", 3),
                         delay = settings.get("DB_RECONNECT_DELAY", 10),
@@ -64,7 +65,8 @@ class Databases:
                     logger.exception(
                         f"[Database: {name}] Failed to reconnect to database. Errorcode - {error.errno}. "
                     )
-                    raise error from None
+                    database = MySqlDB(settings)
+                    Databases._instances_[name]["db"]
             return database
 
     @staticmethod
@@ -168,6 +170,7 @@ class MySqlDB:
     def cursor(self, rollback_on_error=True, **kwargs):
         if self.connection is None:
             self.init_connection()
+        cursor = None
         try:
             kwargs = kwargs or {}
             kwargs.setdefault("dictionary", True)
@@ -178,11 +181,12 @@ class MySqlDB:
                 self.connection.rollback()
             raise error from None
         finally:
-            cursor.close()
+            if cursor: cursor.close()
 
     def fetchone(self, query, params=None, **kwargs):
         if self.connection is None:
             self.init_connection()
+        cursor = None
         try:
             kwargs = kwargs or {"dictionary": True}
             cursor = self.connection.cursor(**kwargs)
@@ -190,11 +194,12 @@ class MySqlDB:
             result = cursor.fetchone()
             return result
         finally:
-            cursor.close()
+            if cursor: cursor.close()
 
     def fetchall(self, query, params=None, **kwargs):
         if self.connection is None:
             self.init_connection()
+        cursor = None
         try:
             kwargs = kwargs or {"dictionary": True}
             cursor = self.connection.cursor(**kwargs)
@@ -202,7 +207,7 @@ class MySqlDB:
             result = cursor.fetchall()
             return result
         finally:
-            cursor.close()
+            if cursor: cursor.close()
 
     def close(self):
         if self.connection is not None:
