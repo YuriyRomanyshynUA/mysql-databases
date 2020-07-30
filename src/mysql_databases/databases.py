@@ -55,18 +55,16 @@ class Databases:
             settings = Databases._instances_[name]["settings"]
             if not database.is_connected():
                 try:
-                    database.rollback()
-                    database.close()
                     database.reconnect(
                         attempts = settings.get("DB_RECONNECT_ATTEMPTS", 3),
                         delay = settings.get("DB_RECONNECT_DELAY", 10),
                     )
                 except MySqlError as error:
-                    logger.exception(
+                    logger.warning(
                         f"[Database: {name}] Failed to reconnect to database. Errorcode - {error.errno}. "
                     )
                     database = MySqlDB(settings)
-                    Databases._instances_[name]["db"]
+                    Databases._instances_[name]["db"] = database
             return database
 
     @staticmethod
