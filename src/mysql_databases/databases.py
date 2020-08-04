@@ -165,13 +165,14 @@ class MySqlDB:
         self.connection.commit()
 
     @contextlib.contextmanager
-    def cursor(self, rollback_on_error=True, **kwargs):
+    def cursor(self, buffered=True, rollback_on_error=True, **kwargs):
         if self.connection is None:
             self.init_connection()
         cursor = None
         try:
             kwargs = kwargs or {}
             kwargs.setdefault("dictionary", True)
+            kwargs.setdefault("buffered", buffered)
             cursor = self.connection.cursor(**kwargs)
             yield cursor
         except MySqlError as error:
@@ -179,7 +180,8 @@ class MySqlDB:
                 self.connection.rollback()
             raise error from None
         finally:
-            if cursor: cursor.close()
+            if cursor:
+                cursor.close()
 
     def fetchone(self, query, params=None, **kwargs):
         if self.connection is None:
@@ -192,7 +194,8 @@ class MySqlDB:
             result = cursor.fetchone()
             return result
         finally:
-            if cursor: cursor.close()
+            if cursor:
+                cursor.close()
 
     def fetchall(self, query, params=None, **kwargs):
         if self.connection is None:
@@ -205,7 +208,8 @@ class MySqlDB:
             result = cursor.fetchall()
             return result
         finally:
-            if cursor: cursor.close()
+            if cursor:
+                cursor.close()
 
     def close(self):
         if self.connection is not None:
