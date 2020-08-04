@@ -189,6 +189,7 @@ class MySqlDB:
         cursor = None
         try:
             kwargs = kwargs or {"dictionary": True}
+            kwargs.setdefault("buffered", True)
             cursor = self.connection.cursor(**kwargs)
             cursor.execute(query, params)
             result = cursor.fetchone()
